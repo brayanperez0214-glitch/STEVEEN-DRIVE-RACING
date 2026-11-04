@@ -5,11 +5,10 @@
         android:name="android.hardware.location.gps"
         android:required="false" />
 
-    <uses-permission
-        android:name="android.permission.ACCESS_FINE_LOCATION" />
-
-    <uses-permission
-        android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <uses-permission
         android:name="android.permission.BLUETOOTH"
@@ -20,18 +19,14 @@
         android:maxSdkVersion="30" />
 
     <queries>
-
         <intent>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent>
 
         <package android:name="com.google.android.apps.maps" />
-
         <package android:name="com.google.android.projection.gearhead" />
-
         <package android:name="com.whatsapp" />
-
     </queries>
 
     <application
@@ -39,6 +34,14 @@
         android:label="STEVEEN-DRIVE"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
+
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="TU_CLAVE_API_DE_GOOGLE_MAPS" />
 
         <activity
             android:name=".MainActivity"
