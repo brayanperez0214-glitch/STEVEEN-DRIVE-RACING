@@ -19,6 +19,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.Settings;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -60,23 +61,18 @@ public class MainActivity extends Activity implements LocationListener {
     private final Runnable clockRunnable = new Runnable() {
         @Override
         public void run() {
-
             if (clockText != null && dateText != null) {
-
                 Date now = new Date();
 
                 SimpleDateFormat timeFormat =
-                        new SimpleDateFormat(
-                                "h:mm a",
+                        new SimpleDateFormat("h:mm a",
                                 new Locale("es", "CO"));
 
                 SimpleDateFormat dateFormat =
-                        new SimpleDateFormat(
-                                "EEE d MMM",
+                        new SimpleDateFormat("EEE d MMM",
                                 new Locale("es", "CO"));
 
                 String date = dateFormat.format(now);
-
                 date = date.substring(0, 1).toUpperCase(Locale.ROOT)
                         + date.substring(1);
 
@@ -100,7 +96,7 @@ public class MainActivity extends Activity implements LocationListener {
         root = new FrameLayout(this);
         root.setBackgroundColor(Color.BLACK);
 
-        // FONDO ORIGINAL
+        // FONDO ORIGINAL: NO SE MODIFICA
 
         ImageView background = new ImageView(this);
         background.setImageResource(R.drawable.dashboard);
@@ -118,93 +114,109 @@ public class MainActivity extends Activity implements LocationListener {
         speedText.setText("0");
         speedText.setTextColor(Color.WHITE);
         speedText.setTextSize(43);
-
         speedText.setTypeface(Typeface.create(
                 "sans-serif-condensed", Typeface.BOLD));
-
         speedText.setGravity(Gravity.CENTER);
-
         speedText.setShadowLayer(5, 0, 0, Color.BLACK);
-
         speedText.setBackground(
                 roundBackground(Color.rgb(5, 5, 7), 100));
 
         addAt(speedText, 0.155f, 0.372f, 0.075f, 0.105f);
 
-        // RELOJ DINAMICO
+        // RELOJ: PANEL QUE OCULTA LA HORA ANTIGUA DEL FONDO
+
+        LinearLayout clockPanel = new LinearLayout(this);
+        clockPanel.setOrientation(LinearLayout.VERTICAL);
+        clockPanel.setGravity(Gravity.CENTER);
+        clockPanel.setBackgroundColor(Color.BLACK);
+        clockPanel.setPadding(dp(2), 0, dp(2), 0);
 
         clockText = new TextView(this);
         clockText.setTextColor(Color.WHITE);
         clockText.setTextSize(14);
         clockText.setTypeface(Typeface.DEFAULT_BOLD);
         clockText.setGravity(Gravity.CENTER);
-        clockText.setShadowLayer(4, 0, 0, Color.BLACK);
-
-        addAt(clockText, 0.865f, 0.030f, 0.135f, 0.045f);
-
-        // FECHA DINAMICA
+        clockText.setSingleLine(true);
 
         dateText = new TextView(this);
-        dateText.setTextColor(Color.WHITE);
+        dateText.setTextColor(Color.RED);
         dateText.setTextSize(10);
+        dateText.setTypeface(Typeface.DEFAULT_BOLD);
         dateText.setGravity(Gravity.CENTER);
-        dateText.setShadowLayer(4, 0, 0, Color.BLACK);
+        dateText.setSingleLine(true);
 
-        addAt(dateText, 0.865f, 0.075f, 0.135f, 0.035f);
+        clockPanel.addView(clockText,
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, 0, 1));
+
+        clockPanel.addView(dateText,
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, 0, 1));
+
+        // Zona superior derecha: deja libres Bluetooth y WiFi.
+        addAt(clockPanel, 0.888f, 0.043f, 0.112f, 0.078f);
 
         startClock();
 
         // =====================================
-        // BARRA INFERIOR - 9 BOTONES
+        // BARRA INFERIOR: 9 BOTONES
         // =====================================
 
         // 1. INICIO
-
-        addHotspot(0.000f, 0.80f, 0.112f, 0.19f,
+        addHotspot(0.010f, 0.755f, 0.100f, 0.145f,
                 v -> showHome());
 
         // 2. ANDROID AUTO
-
-        addHotspot(0.115f, 0.80f, 0.105f, 0.19f,
+        addHotspot(0.118f, 0.755f, 0.100f, 0.145f,
                 v -> openAndroidAuto());
 
         // 3. YOUTUBE WEB
-
-        addHotspot(0.222f, 0.80f, 0.108f, 0.19f,
+        addHotspot(0.224f, 0.755f, 0.100f, 0.145f,
                 v -> openYouTubeWeb());
 
         // 4. XUPER HYDRA
-
-        addHotspot(0.330f, 0.80f, 0.125f, 0.19f,
+        addHotspot(0.330f, 0.755f, 0.122f, 0.145f,
                 v -> openAppByName("xuper hydra"));
 
-        // 5. AVEO - LOGO CENTRAL
-
-        addHotspot(0.455f, 0.80f, 0.105f, 0.19f,
+        // 5. AVEO: conserva el logo central
+        addHotspot(0.460f, 0.755f, 0.120f, 0.145f,
                 v -> showHome());
 
         // 6. MUSICA
-
-        addHotspot(0.560f, 0.80f, 0.120f, 0.19f,
+        addHotspot(0.565f, 0.755f, 0.115f, 0.145f,
                 v -> openMusic());
 
         // 7. VIDEOS
-
-        addHotspot(0.685f, 0.80f, 0.105f, 0.19f,
+        addHotspot(0.690f, 0.755f, 0.100f, 0.145f,
                 v -> openVideo());
 
         // 8. AUTO
-
-        addHotspot(0.792f, 0.80f, 0.105f, 0.19f,
+        addHotspot(0.795f, 0.755f, 0.100f, 0.145f,
                 v -> openMiAuto());
 
         // 9. APPS
-
-        addHotspot(0.900f, 0.80f, 0.100f, 0.19f,
+        addHotspot(0.900f, 0.755f, 0.095f, 0.145f,
                 v -> showInstalledApps());
 
         // =====================================
-        // PANEL DERECHO - CONSERVADO
+        // NUEVOS ICONOS Y NOMBRES
+        // Se conservan los bordes originales.
+        // =====================================
+
+        addButtonOverlay(
+                "AA", "ANDROID AUTO",
+                0.168f, 0.825f, 0.087f, 0.112f);
+
+        addButtonOverlay(
+                "▶", "YOUTUBE WEB",
+                0.275f, 0.825f, 0.088f, 0.112f);
+
+        addButtonOverlay(
+                "XH", "XUPER HYDRA",
+                0.391f, 0.825f, 0.105f, 0.112f);
+
+        // =====================================
+        // PANEL DERECHO: CONSERVADO
         // =====================================
 
         addHotspot(0.735f, 0.125f, 0.255f, 0.355f,
@@ -218,31 +230,81 @@ public class MainActivity extends Activity implements LocationListener {
         // =====================================
 
         // CONFIGURACION
-
-        addHotspot(0.000f, 0.000f, 0.060f, 0.105f,
+        addHotspot(0.000f, 0.000f, 0.060f, 0.080f,
                 v -> openSettings());
 
-        // TELEFONO
-
-        addHotspot(0.065f, 0.000f, 0.070f, 0.105f,
+        // TELEFONO: SOLO ABRE EL MARCADOR
+        addHotspot(0.065f, 0.000f, 0.070f, 0.080f,
                 v -> openDialer());
 
-        // BLUETOOTH SUPERIOR
-
-        addHotspot(0.785f, 0.000f, 0.055f, 0.105f,
+        // BLUETOOTH
+        addHotspot(0.785f, 0.000f, 0.055f, 0.090f,
                 v -> openBluetooth());
 
-        // WIFI SUPERIOR
-
-        addHotspot(0.945f, 0.000f, 0.055f, 0.105f,
+        // WIFI
+        addHotspot(0.945f, 0.000f, 0.055f, 0.090f,
                 v -> openWiFi());
 
         // GPS
-
         locationManager = (LocationManager)
                 getSystemService(LOCATION_SERVICE);
 
         requestLocationIfNeeded();
+    }
+
+    // =====================================
+    // CAPAS DE NUEVOS BOTONES
+    // =====================================
+
+    private void addButtonOverlay(
+            String symbol,
+            String label,
+            float centerX,
+            float centerY,
+            float width,
+            float height) {
+
+        LinearLayout panel = new LinearLayout(this);
+        panel.setOrientation(LinearLayout.VERTICAL);
+        panel.setGravity(Gravity.CENTER);
+        panel.setPadding(dp(2), dp(1), dp(2), dp(1));
+
+        GradientDrawable background = new GradientDrawable();
+        background.setColor(Color.rgb(5, 5, 7));
+        background.setCornerRadius(dp(7));
+        background.setStroke(dp(1), Color.rgb(120, 35, 35));
+        panel.setBackground(background);
+
+        TextView icon = new TextView(this);
+        icon.setText(symbol);
+        icon.setTextColor(Color.WHITE);
+        icon.setTextSize(symbol.length() > 1 ? 21 : 27);
+        icon.setTypeface(Typeface.DEFAULT_BOLD);
+        icon.setGravity(Gravity.CENTER);
+
+        TextView name = new TextView(this);
+        name.setText(label);
+        name.setTextColor(Color.WHITE);
+        name.setTextSize(9);
+        name.setTypeface(Typeface.create(
+                "sans-serif-condensed", Typeface.BOLD));
+        name.setGravity(Gravity.CENTER);
+        name.setSingleLine(true);
+        name.setIncludeFontPadding(false);
+
+        panel.addView(icon,
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, 0, 1.2f));
+
+        panel.addView(name,
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, 0, 0.8f));
+
+        // La capa no intercepta los toques del botón.
+        panel.setClickable(false);
+        panel.setFocusable(false);
+
+        addAt(panel, centerX, centerY, width, height);
     }
 
     // =====================================
@@ -263,7 +325,6 @@ public class MainActivity extends Activity implements LocationListener {
     // =====================================
 
     private void hideSystemUI() {
-
         getWindow().getDecorView().setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_FULLSCREEN
                         | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
@@ -274,7 +335,7 @@ public class MainActivity extends Activity implements LocationListener {
     }
 
     // =====================================
-    // FONDO DE ELEMENTOS
+    // FONDOS
     // =====================================
 
     private GradientDrawable roundBackground(
@@ -284,7 +345,6 @@ public class MainActivity extends Activity implements LocationListener {
         d.setColor(color);
         d.setCornerRadius(radius);
         d.setStroke(1, Color.TRANSPARENT);
-
         return d;
     }
 
@@ -327,7 +387,6 @@ public class MainActivity extends Activity implements LocationListener {
             View.OnClickListener listener) {
 
         View v = new View(this);
-
         v.setBackgroundColor(Color.TRANSPARENT);
         v.setOnClickListener(listener);
 
@@ -358,25 +417,19 @@ public class MainActivity extends Activity implements LocationListener {
         Intent launcherIntent =
                 new Intent(Intent.ACTION_MAIN);
 
-        launcherIntent.addCategory(
-                Intent.CATEGORY_LAUNCHER);
+        launcherIntent.addCategory(Intent.CATEGORY_LAUNCHER);
 
         PackageManager pm = getPackageManager();
 
         List<ResolveInfo> apps =
                 pm.queryIntentActivities(launcherIntent, 0);
 
-        List<ResolveInfo> availableApps =
-                new ArrayList<>();
+        List<ResolveInfo> availableApps = new ArrayList<>();
 
         for (ResolveInfo app : apps) {
+            if (app.activityInfo == null) continue;
 
-            if (app.activityInfo == null) {
-                continue;
-            }
-
-            if (app.activityInfo.packageName.equals(
-                    getPackageName())) {
+            if (app.activityInfo.packageName.equals(getPackageName())) {
                 continue;
             }
 
@@ -385,12 +438,8 @@ public class MainActivity extends Activity implements LocationListener {
 
         Collections.sort(availableApps,
                 new Comparator<ResolveInfo>() {
-
                     @Override
-                    public int compare(
-                            ResolveInfo a,
-                            ResolveInfo b) {
-
+                    public int compare(ResolveInfo a, ResolveInfo b) {
                         return a.loadLabel(pm).toString()
                                 .compareToIgnoreCase(
                                         b.loadLabel(pm).toString());
@@ -398,16 +447,13 @@ public class MainActivity extends Activity implements LocationListener {
                 });
 
         if (availableApps.isEmpty()) {
-
             Toast.makeText(this,
                     "No se encontraron aplicaciones",
                     Toast.LENGTH_SHORT).show();
-
             return;
         }
 
         GridView grid = new GridView(this);
-
         grid.setNumColumns(5);
         grid.setColumnWidth(dp(100));
         grid.setVerticalSpacing(dp(12));
@@ -417,7 +463,6 @@ public class MainActivity extends Activity implements LocationListener {
         grid.setBackgroundColor(Color.rgb(15, 15, 18));
 
         BaseAdapter adapter = new BaseAdapter() {
-
             @Override
             public int getCount() {
                 return availableApps.size();
@@ -439,40 +484,24 @@ public class MainActivity extends Activity implements LocationListener {
                     View convertView,
                     ViewGroup parent) {
 
-                ResolveInfo app =
-                        availableApps.get(position);
+                ResolveInfo app = availableApps.get(position);
 
-                LinearLayout item =
-                        new LinearLayout(MainActivity.this);
+                LinearLayout item = new LinearLayout(
+                        MainActivity.this);
 
-                item.setOrientation(
-                        LinearLayout.VERTICAL);
-
+                item.setOrientation(LinearLayout.VERTICAL);
                 item.setGravity(Gravity.CENTER);
+                item.setPadding(dp(5), dp(8), dp(5), dp(8));
 
-                item.setPadding(
-                        dp(5), dp(8), dp(5), dp(8));
-
-                ImageView icon =
-                        new ImageView(MainActivity.this);
-
+                ImageView icon = new ImageView(MainActivity.this);
                 icon.setImageDrawable(app.loadIcon(pm));
+                icon.setScaleType(ImageView.ScaleType.FIT_CENTER);
 
-                icon.setScaleType(
-                        ImageView.ScaleType.FIT_CENTER);
+                item.addView(icon,
+                        new LinearLayout.LayoutParams(dp(54), dp(54)));
 
-                LinearLayout.LayoutParams iconParams =
-                        new LinearLayout.LayoutParams(
-                                dp(54), dp(54));
-
-                item.addView(icon, iconParams);
-
-                TextView name =
-                        new TextView(MainActivity.this);
-
-                name.setText(
-                        app.loadLabel(pm).toString());
-
+                TextView name = new TextView(MainActivity.this);
+                name.setText(app.loadLabel(pm).toString());
                 name.setTextColor(Color.WHITE);
                 name.setTextSize(12);
                 name.setGravity(Gravity.CENTER);
@@ -490,19 +519,15 @@ public class MainActivity extends Activity implements LocationListener {
 
         grid.setAdapter(adapter);
 
-        AlertDialog dialog =
-                new AlertDialog.Builder(this)
-                        .setTitle("STEVEEN DRIVE - APLICACIONES")
-                        .setView(grid)
-                        .setNegativeButton("CERRAR", null)
-                        .create();
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("STEVEEN DRIVE - APLICACIONES")
+                .setView(grid)
+                .setNegativeButton("CERRAR", null)
+                .create();
 
         grid.setOnItemClickListener(
                 (parent, view, position, id) -> {
-
-                    ResolveInfo selected =
-                            availableApps.get(position);
-
+                    ResolveInfo selected = availableApps.get(position);
                     dialog.dismiss();
                     launchApp(selected);
                 });
@@ -510,45 +535,32 @@ public class MainActivity extends Activity implements LocationListener {
         dialog.show();
 
         if (dialog.getWindow() != null) {
-
             dialog.getWindow().setLayout(
-                    (int) (
-                            getResources().getDisplayMetrics()
-                                    .widthPixels * 0.90),
-
-                    (int) (
-                            getResources().getDisplayMetrics()
-                                    .heightPixels * 0.85));
+                    (int) (getResources().getDisplayMetrics()
+                            .widthPixels * 0.90),
+                    (int) (getResources().getDisplayMetrics()
+                            .heightPixels * 0.85));
         }
     }
 
     private int dp(int value) {
-
         return (int) (value * getResources()
                 .getDisplayMetrics().density + 0.5f);
     }
 
     private void launchApp(ResolveInfo selected) {
-
         try {
-
-            Intent launch =
-                    new Intent(Intent.ACTION_MAIN);
-
-            launch.addCategory(
-                    Intent.CATEGORY_LAUNCHER);
+            Intent launch = new Intent(Intent.ACTION_MAIN);
+            launch.addCategory(Intent.CATEGORY_LAUNCHER);
 
             launch.setComponent(new ComponentName(
                     selected.activityInfo.packageName,
                     selected.activityInfo.name));
 
-            launch.addFlags(
-                    Intent.FLAG_ACTIVITY_NEW_TASK);
-
+            launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(launch);
 
         } catch (Exception e) {
-
             Toast.makeText(this,
                     "No se pudo abrir la aplicación",
                     Toast.LENGTH_SHORT).show();
@@ -561,32 +573,21 @@ public class MainActivity extends Activity implements LocationListener {
 
     private void openAppByName(String appName) {
 
-        Intent intent =
-                new Intent(Intent.ACTION_MAIN);
-
-        intent.addCategory(
-                Intent.CATEGORY_LAUNCHER);
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_LAUNCHER);
 
         List<ResolveInfo> apps =
-                getPackageManager().queryIntentActivities(
-                        intent, 0);
+                getPackageManager().queryIntentActivities(intent, 0);
 
-        String search =
-                appName.toLowerCase(Locale.ROOT);
+        String search = appName.toLowerCase(Locale.ROOT);
 
         for (ResolveInfo app : apps) {
+            if (app.activityInfo == null) continue;
 
-            if (app.activityInfo == null) {
-                continue;
-            }
-
-            String name =
-                    app.loadLabel(getPackageManager())
-                            .toString()
-                            .toLowerCase(Locale.ROOT);
+            String name = app.loadLabel(getPackageManager())
+                    .toString().toLowerCase(Locale.ROOT);
 
             if (name.contains(search)) {
-
                 launchApp(app);
                 return;
             }
@@ -602,9 +603,7 @@ public class MainActivity extends Activity implements LocationListener {
     // =====================================
 
     private void openAndroidAuto() {
-
-        openPackage(
-                "com.google.android.projection.gearhead");
+        openPackage("com.google.android.projection.gearhead");
     }
 
     // =====================================
@@ -612,9 +611,7 @@ public class MainActivity extends Activity implements LocationListener {
     // =====================================
 
     private void openYouTubeWeb() {
-
         try {
-
             Intent intent = new Intent(
                     Intent.ACTION_VIEW,
                     Uri.parse("https://www.youtube.com"));
@@ -622,7 +619,6 @@ public class MainActivity extends Activity implements LocationListener {
             startActivity(intent);
 
         } catch (Exception e) {
-
             Toast.makeText(this,
                     "No se pudo abrir YouTube",
                     Toast.LENGTH_SHORT).show();
@@ -634,14 +630,9 @@ public class MainActivity extends Activity implements LocationListener {
     // =====================================
 
     private void openWiFi() {
-
         try {
-
-            startActivity(new Intent(
-                    android.provider.Settings.ACTION_WIFI_SETTINGS));
-
+            startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
         } catch (Exception e) {
-
             openSettings();
         }
     }
@@ -651,14 +642,10 @@ public class MainActivity extends Activity implements LocationListener {
     // =====================================
 
     private void openBluetooth() {
-
         try {
-
             startActivity(new Intent(
-                    android.provider.Settings.ACTION_BLUETOOTH_SETTINGS));
-
+                    Settings.ACTION_BLUETOOTH_SETTINGS));
         } catch (Exception e) {
-
             openSettings();
         }
     }
@@ -668,7 +655,6 @@ public class MainActivity extends Activity implements LocationListener {
     // =====================================
 
     private void openMiAuto() {
-
         openAppByName("mi auto");
     }
 
@@ -677,7 +663,6 @@ public class MainActivity extends Activity implements LocationListener {
     // =====================================
 
     private void openMusic() {
-
         openMediaPicker(
                 "audio/*",
                 AUDIO_REQUEST,
@@ -689,7 +674,6 @@ public class MainActivity extends Activity implements LocationListener {
     // =====================================
 
     private void openVideo() {
-
         openMediaPicker(
                 "video/*",
                 VIDEO_REQUEST,
@@ -702,43 +686,31 @@ public class MainActivity extends Activity implements LocationListener {
             String title) {
 
         try {
-
-            Intent picker =
-                    new Intent(Intent.ACTION_GET_CONTENT);
-
+            Intent picker = new Intent(Intent.ACTION_GET_CONTENT);
             picker.setType(type);
-
-            picker.addCategory(
-                    Intent.CATEGORY_OPENABLE);
+            picker.addCategory(Intent.CATEGORY_OPENABLE);
 
             startActivityForResult(
                     Intent.createChooser(picker, title),
                     requestCode);
 
         } catch (ActivityNotFoundException e) {
-
             try {
-
-                Intent picker =
-                        new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                Intent picker = new Intent(
+                        Intent.ACTION_OPEN_DOCUMENT);
 
                 picker.setType(type);
+                picker.addCategory(Intent.CATEGORY_OPENABLE);
 
-                picker.addCategory(
-                        Intent.CATEGORY_OPENABLE);
-
-                startActivityForResult(
-                        picker, requestCode);
+                startActivityForResult(picker, requestCode);
 
             } catch (Exception ex) {
-
                 Toast.makeText(this,
                         "No hay explorador compatible",
                         Toast.LENGTH_LONG).show();
             }
 
         } catch (Exception e) {
-
             Toast.makeText(this,
                     "No se pudo abrir el explorador",
                     Toast.LENGTH_SHORT).show();
@@ -751,60 +723,42 @@ public class MainActivity extends Activity implements LocationListener {
             int resultCode,
             Intent data) {
 
-        super.onActivityResult(
-                requestCode, resultCode, data);
+        super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode != RESULT_OK
                 || data == null
                 || data.getData() == null) {
-
             return;
         }
 
         if (requestCode == AUDIO_REQUEST) {
-
-            playSelectedMedia(
-                    data.getData(), "audio/*");
-
+            playSelectedMedia(data.getData(), "audio/*");
         } else if (requestCode == VIDEO_REQUEST) {
-
-            playSelectedMedia(
-                    data.getData(), "video/*");
+            playSelectedMedia(data.getData(), "video/*");
         }
     }
 
-    private void playSelectedMedia(
-            Uri uri,
-            String fallbackType) {
-
+    private void playSelectedMedia(Uri uri, String fallbackType) {
         try {
-
-            String mime =
-                    getContentResolver().getType(uri);
+            String mime = getContentResolver().getType(uri);
 
             if (mime == null) {
                 mime = fallbackType;
             }
 
-            Intent play =
-                    new Intent(Intent.ACTION_VIEW);
-
+            Intent play = new Intent(Intent.ACTION_VIEW);
             play.setDataAndType(uri, mime);
-
-            play.addFlags(
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            play.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
             startActivity(Intent.createChooser(
                     play, "Abrir con reproductor"));
 
         } catch (ActivityNotFoundException e) {
-
             Toast.makeText(this,
                     "No hay reproductor compatible instalado",
                     Toast.LENGTH_LONG).show();
 
         } catch (Exception e) {
-
             Toast.makeText(this,
                     "No se pudo abrir el archivo",
                     Toast.LENGTH_SHORT).show();
@@ -816,22 +770,16 @@ public class MainActivity extends Activity implements LocationListener {
     // =====================================
 
     private void openMaps() {
-
         try {
-
             Intent i = new Intent(
                     Intent.ACTION_VIEW,
                     Uri.parse("google.navigation:q="));
 
-            i.setPackage(
-                    "com.google.android.apps.maps");
-
+            i.setPackage("com.google.android.apps.maps");
             startActivity(i);
 
         } catch (Exception e) {
-
             try {
-
                 Intent geo = new Intent(
                         Intent.ACTION_VIEW,
                         Uri.parse("geo:0,0?q="));
@@ -840,9 +788,7 @@ public class MainActivity extends Activity implements LocationListener {
                         geo, "Seleccionar navegación"));
 
             } catch (Exception ignored) {
-
-                openPackage(
-                        "com.google.android.apps.maps");
+                openPackage("com.google.android.apps.maps");
             }
         }
     }
@@ -852,25 +798,19 @@ public class MainActivity extends Activity implements LocationListener {
     // =====================================
 
     private void openPackage(String packageName) {
-
         try {
-
             Intent i = getPackageManager()
                     .getLaunchIntentForPackage(packageName);
 
             if (i != null) {
-
                 startActivity(i);
-
             } else {
-
                 Toast.makeText(this,
                         "La aplicación no está instalada o no tiene acceso de inicio",
                         Toast.LENGTH_LONG).show();
             }
 
         } catch (Exception e) {
-
             Toast.makeText(this,
                     "No se pudo abrir la aplicación",
                     Toast.LENGTH_SHORT).show();
@@ -882,7 +822,6 @@ public class MainActivity extends Activity implements LocationListener {
     // =====================================
 
     private void showHome() {
-
         hideSystemUI();
 
         Toast.makeText(this,
@@ -895,14 +834,9 @@ public class MainActivity extends Activity implements LocationListener {
     // =====================================
 
     private void openSettings() {
-
         try {
-
-            startActivity(new Intent(
-                    android.provider.Settings.ACTION_SETTINGS));
-
+            startActivity(new Intent(Settings.ACTION_SETTINGS));
         } catch (Exception e) {
-
             showHome();
         }
     }
@@ -912,15 +846,14 @@ public class MainActivity extends Activity implements LocationListener {
     // =====================================
 
     private void openDialer() {
-
         try {
-
-            startActivity(new Intent(
-                    Intent.ACTION_DIAL));
+            Intent dial = new Intent(Intent.ACTION_DIAL);
+            startActivity(dial);
 
         } catch (Exception e) {
-
-            showInstalledApps();
+            Toast.makeText(this,
+                    "No hay aplicación telefónica disponible",
+                    Toast.LENGTH_LONG).show();
         }
     }
 
@@ -929,7 +862,6 @@ public class MainActivity extends Activity implements LocationListener {
     // =====================================
 
     private void requestLocationIfNeeded() {
-
         if (checkSelfPermission(
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
@@ -937,7 +869,6 @@ public class MainActivity extends Activity implements LocationListener {
             startGps();
 
         } else {
-
             requestPermissions(
                     new String[]{
                             Manifest.permission.ACCESS_FINE_LOCATION,
@@ -948,20 +879,17 @@ public class MainActivity extends Activity implements LocationListener {
     }
 
     private void startGps() {
-
         if (locationStarted || locationManager == null) {
             return;
         }
 
         try {
-
             if (!locationManager.isProviderEnabled(
                     LocationManager.GPS_PROVIDER)) {
 
                 Toast.makeText(this,
                         "Activa el GPS para mostrar la velocidad real",
                         Toast.LENGTH_LONG).show();
-
                 return;
             }
 
@@ -973,16 +901,14 @@ public class MainActivity extends Activity implements LocationListener {
 
             locationStarted = true;
 
-            Location last =
-                    locationManager.getLastKnownLocation(
-                            LocationManager.GPS_PROVIDER);
+            Location last = locationManager.getLastKnownLocation(
+                    LocationManager.GPS_PROVIDER);
 
             if (last != null) {
                 onLocationChanged(last);
             }
 
         } catch (SecurityException e) {
-
             Toast.makeText(this,
                     "Permiso GPS no concedido",
                     Toast.LENGTH_SHORT).show();
@@ -991,13 +917,11 @@ public class MainActivity extends Activity implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
-
         if (speedText == null || location == null) {
             return;
         }
 
         if (location.hasSpeed()) {
-
             int kmh = Math.max(
                     0,
                     Math.round(location.getSpeed() * 3.6f));
@@ -1037,7 +961,6 @@ public class MainActivity extends Activity implements LocationListener {
             startGps();
 
         } else {
-
             Toast.makeText(this,
                     "Sin permiso GPS: velocímetro sin velocidad real",
                     Toast.LENGTH_LONG).show();
@@ -1050,7 +973,6 @@ public class MainActivity extends Activity implements LocationListener {
 
     @Override
     protected void onResume() {
-
         super.onResume();
 
         hideSystemUI();
@@ -1066,13 +988,11 @@ public class MainActivity extends Activity implements LocationListener {
 
     @Override
     protected void onPause() {
-
         super.onPause();
 
         stopClock();
 
         if (locationManager != null && locationStarted) {
-
             locationManager.removeUpdates(this);
             locationStarted = false;
         }
@@ -1080,7 +1000,6 @@ public class MainActivity extends Activity implements LocationListener {
 
     @Override
     protected void onDestroy() {
-
         stopClock();
 
         if (locationManager != null) {
