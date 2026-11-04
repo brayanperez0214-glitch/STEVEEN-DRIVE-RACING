@@ -59,7 +59,8 @@ public class MainActivity extends Activity implements LocationListener {
     private Uri currentAudioUri;
     private boolean musicPrepared = false;
 
-    private final Handler clockHandler = new Handler(Looper.getMainLooper());
+    private final Handler clockHandler =
+            new Handler(Looper.getMainLooper());
 
     private final Runnable clockRunnable = new Runnable() {
         @Override
@@ -73,16 +74,17 @@ public class MainActivity extends Activity implements LocationListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        getWindow().addFlags(
+                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+        );
 
         hideSystemUI();
 
         root = new FrameLayout(this);
         root.setBackgroundColor(Color.BLACK);
-
         setContentView(root);
 
-        // Imagen principal aprobada
+        // IMAGEN PRINCIPAL
         ImageView background = new ImageView(this);
         background.setImageResource(R.drawable.dashboard);
         background.setScaleType(ImageView.ScaleType.FIT_XY);
@@ -95,7 +97,7 @@ public class MainActivity extends Activity implements LocationListener {
                 )
         );
 
-        // Velocímetro GPS
+        // VELOCIMETRO GPS
         speedText = new TextView(this);
         speedText.setText("0");
         speedText.setTextColor(Color.WHITE);
@@ -110,10 +112,10 @@ public class MainActivity extends Activity implements LocationListener {
 
         addAt(speedText, 0.155f, 0.372f, 0.075f, 0.105f);
 
-        // Hora y fecha
+        // RELOJ Y FECHA
         createClockPanel();
 
-        // Barra inferior: orden definitivo
+        // BARRA INFERIOR
         addHotspot(0.010f, 0.755f, 0.100f, 0.145f, this::showHome);
         addHotspot(0.118f, 0.755f, 0.100f, 0.145f, this::openAndroidAuto);
         addHotspot(0.224f, 0.755f, 0.100f, 0.145f, this::showHome);
@@ -125,29 +127,31 @@ public class MainActivity extends Activity implements LocationListener {
                 () -> openAppByName("xuper hydra"));
         addHotspot(0.900f, 0.755f, 0.095f, 0.145f, this::openYouTubeWeb);
 
-        // Panel de navegación / Maps
+        // MAPAS
         addHotspot(0.735f, 0.125f, 0.255f, 0.355f, this::openMaps);
 
-        // Panel de música: si no hay canción, permite elegirla.
-        // Si ya hay canción, reproduce o pausa.
+        // MUSICA INTEGRADA
         addHotspot(0.735f, 0.505f, 0.255f, 0.265f, this::toggleMusic);
 
-        // Barra superior
+        // CONFIGURACION Y TELEFONO
         addHotspot(0.000f, 0.000f, 0.060f, 0.085f, this::openSettings);
         addHotspot(0.065f, 0.000f, 0.070f, 0.085f, this::openPhone);
-        addHotspot(0.785f, 0.000f, 0.055f, 0.090f, this::openBluetooth);
-        addHotspot(0.945f, 0.000f, 0.055f, 0.090f, this::openWiFi);
+
+        // ORDEN CORRECTO: WIFI PRIMERO
+        addHotspot(0.785f, 0.000f, 0.055f, 0.090f, this::openWiFi);
+
+        // BLUETOOTH DESPUES DEL WIFI
+        addHotspot(0.945f, 0.000f, 0.055f, 0.090f, this::openBluetooth);
 
         // GPS
-        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        locationManager =
+                (LocationManager) getSystemService(LOCATION_SERVICE);
 
         updateClock();
         requestLocationIfNeeded();
     }
 
-    // ---------------------------------------------------------
     // PANTALLA COMPLETA
-    // ---------------------------------------------------------
 
     private void hideSystemUI() {
         getWindow().getDecorView().setSystemUiVisibility(
@@ -160,19 +164,26 @@ public class MainActivity extends Activity implements LocationListener {
         );
     }
 
-    // ---------------------------------------------------------
-    // POSICIONAMIENTO DE ELEMENTOS
-    // ---------------------------------------------------------
+    // POSICIONAMIENTO
 
-    private void addAt(View view, float x, float y, float width, float height) {
+    private void addAt(
+            View view,
+            float x,
+            float y,
+            float width,
+            float height
+    ) {
+        int screenWidth =
+                getResources().getDisplayMetrics().widthPixels;
 
-        int screenWidth = getResources().getDisplayMetrics().widthPixels;
-        int screenHeight = getResources().getDisplayMetrics().heightPixels;
+        int screenHeight =
+                getResources().getDisplayMetrics().heightPixels;
 
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-                (int) (width * screenWidth),
-                (int) (height * screenHeight)
-        );
+        FrameLayout.LayoutParams params =
+                new FrameLayout.LayoutParams(
+                        (int) (width * screenWidth),
+                        (int) (height * screenHeight)
+                );
 
         params.leftMargin = (int) (x * screenWidth);
         params.topMargin = (int) (y * screenHeight);
@@ -187,7 +198,6 @@ public class MainActivity extends Activity implements LocationListener {
             float height,
             Runnable action
     ) {
-
         View hotspot = new View(this);
         hotspot.setBackgroundColor(Color.TRANSPARENT);
 
@@ -200,28 +210,27 @@ public class MainActivity extends Activity implements LocationListener {
         addAt(hotspot, x, y, width, height);
     }
 
-    // ---------------------------------------------------------
-    // HORA Y FECHA AUTOMÁTICAS
-    // ---------------------------------------------------------
+    // RELOJ Y FECHA
 
     private void createClockPanel() {
 
         LinearLayout panel = new LinearLayout(this);
         panel.setOrientation(LinearLayout.VERTICAL);
         panel.setGravity(Gravity.CENTER);
-
         panel.setBackgroundColor(Color.TRANSPARENT);
 
         clockText = new TextView(this);
         clockText.setTextColor(Color.WHITE);
-        clockText.setTextSize(19);
+        clockText.setTextSize(15);
         clockText.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
         clockText.setGravity(Gravity.CENTER);
+        clockText.setSingleLine(true);
 
         dateText = new TextView(this);
         dateText.setTextColor(Color.WHITE);
-        dateText.setTextSize(10);
+        dateText.setTextSize(8);
         dateText.setGravity(Gravity.CENTER);
+        dateText.setSingleLine(true);
 
         panel.addView(
                 clockText,
@@ -241,7 +250,8 @@ public class MainActivity extends Activity implements LocationListener {
                 )
         );
 
-        addAt(panel, 0.832f, 0.015f, 0.105f, 0.075f);
+        // RELOJ MOVIDO A LA IZQUIERDA DEL WIFI
+        addAt(panel, 0.635f, 0.015f, 0.135f, 0.075f);
     }
 
     private void updateClock() {
@@ -252,50 +262,55 @@ public class MainActivity extends Activity implements LocationListener {
 
         Date now = new Date();
 
+        Locale locale = new Locale("es", "CO");
+
         SimpleDateFormat timeFormat =
-                new SimpleDateFormat("h:mm a", new Locale("es", "CO"));
+                new SimpleDateFormat("h:mm a", locale);
 
         SimpleDateFormat dateFormat =
-                new SimpleDateFormat("EEE d MMM", new Locale("es", "CO"));
+                new SimpleDateFormat("EEE d MMM", locale);
 
         clockText.setText(timeFormat.format(now));
 
         String date = dateFormat.format(now);
 
         if (!date.isEmpty()) {
-            date = date.substring(0, 1).toUpperCase(
-                    new Locale("es", "CO")
-            ) + date.substring(1);
+            date = date.substring(0, 1).toUpperCase(locale)
+                    + date.substring(1);
         }
 
         dateText.setText(date);
     }
 
-    // ---------------------------------------------------------
-    // WIFI Y BLUETOOTH
-    // ---------------------------------------------------------
+    // WIFI
 
     private void openWiFi() {
         try {
-            Intent intent = new Intent(Settings.ACTION_WIFI_SETTINGS);
+            Intent intent =
+                    new Intent(Settings.ACTION_WIFI_SETTINGS);
+
             startActivity(intent);
+
         } catch (Exception e) {
             showToast("No se pudieron abrir los ajustes Wi-Fi");
         }
     }
 
+    // BLUETOOTH
+
     private void openBluetooth() {
         try {
-            Intent intent = new Intent(Settings.ACTION_BLUETOOTH_SETTINGS);
+            Intent intent =
+                    new Intent(Settings.ACTION_BLUETOOTH_SETTINGS);
+
             startActivity(intent);
+
         } catch (Exception e) {
             showToast("No se pudieron abrir los ajustes Bluetooth");
         }
     }
 
-    // ---------------------------------------------------------
-    // TELÉFONO Y CONFIGURACIÓN
-    // ---------------------------------------------------------
+    // TELEFONO Y CONFIGURACION
 
     private void openPhone() {
         try {
@@ -308,20 +323,21 @@ public class MainActivity extends Activity implements LocationListener {
 
     private void openSettings() {
         try {
-            Intent intent = new Intent(Settings.ACTION_SETTINGS);
+            Intent intent =
+                    new Intent(Settings.ACTION_SETTINGS);
+
             startActivity(intent);
         } catch (Exception e) {
             showToast("No se pudieron abrir los ajustes");
         }
     }
 
-    // ---------------------------------------------------------
     // ANDROID AUTO
-    // ---------------------------------------------------------
 
     private void openAndroidAuto() {
 
-        String packageName = "com.google.android.projection.gearhead";
+        String packageName =
+                "com.google.android.projection.gearhead";
 
         try {
             Intent intent = getPackageManager()
@@ -338,12 +354,9 @@ public class MainActivity extends Activity implements LocationListener {
         }
     }
 
-    // ---------------------------------------------------------
     // YOUTUBE WEB
-    // ---------------------------------------------------------
 
     private void openYouTubeWeb() {
-
         try {
             Intent intent = new Intent(
                     Intent.ACTION_VIEW,
@@ -357,9 +370,7 @@ public class MainActivity extends Activity implements LocationListener {
         }
     }
 
-    // ---------------------------------------------------------
     // XUPER HYDRA Y APLICACIONES
-    // ---------------------------------------------------------
 
     private void openAppByName(String searchName) {
 
@@ -368,7 +379,8 @@ public class MainActivity extends Activity implements LocationListener {
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
 
-        List<ResolveInfo> apps = pm.queryIntentActivities(intent, 0);
+        List<ResolveInfo> apps =
+                pm.queryIntentActivities(intent, 0);
 
         for (ResolveInfo app : apps) {
 
@@ -409,7 +421,6 @@ public class MainActivity extends Activity implements LocationListener {
         ArrayList<ResolveInfo> apps = new ArrayList<>();
 
         for (ResolveInfo info : results) {
-
             if (!info.activityInfo.packageName.equals(getPackageName())) {
                 apps.add(info);
             }
@@ -453,7 +464,9 @@ public class MainActivity extends Activity implements LocationListener {
                     android.view.ViewGroup parent
             ) {
 
-                LinearLayout item = new LinearLayout(MainActivity.this);
+                LinearLayout item =
+                        new LinearLayout(MainActivity.this);
+
                 item.setOrientation(LinearLayout.VERTICAL);
                 item.setGravity(Gravity.CENTER);
                 item.setPadding(5, 10, 5, 10);
@@ -503,27 +516,31 @@ public class MainActivity extends Activity implements LocationListener {
 
         if (dialog.getWindow() != null) {
             dialog.getWindow().setLayout(
-                    (int) (getResources().getDisplayMetrics().widthPixels * 0.85),
-                    (int) (getResources().getDisplayMetrics().heightPixels * 0.80)
+                    (int) (
+                            getResources().getDisplayMetrics().widthPixels
+                                    * 0.85
+                    ),
+                    (int) (
+                            getResources().getDisplayMetrics().heightPixels
+                                    * 0.80
+                    )
             );
         }
     }
 
-    // ---------------------------------------------------------
     // INICIO
-    // ---------------------------------------------------------
 
     private void showHome() {
         showToast("STEVEEN DRIVE");
     }
 
-    // ---------------------------------------------------------
-    // REPRODUCTOR DE MÚSICA INTEGRADO
-    // ---------------------------------------------------------
+    // REPRODUCTOR DE MUSICA INTEGRADO
 
     private void openMusic() {
 
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        Intent intent =
+                new Intent(Intent.ACTION_OPEN_DOCUMENT);
+
         intent.setType("audio/*");
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
@@ -551,7 +568,6 @@ public class MainActivity extends Activity implements LocationListener {
         try {
 
             if (mediaPlayer.isPlaying()) {
-
                 mediaPlayer.pause();
                 showToast("Música en pausa");
 
@@ -586,7 +602,6 @@ public class MainActivity extends Activity implements LocationListener {
                         Intent.FLAG_GRANT_READ_URI_PERMISSION
                 );
             } catch (Exception ignored) {
-                // Algunos selectores no conceden permiso persistente.
             }
 
             mediaPlayer = new MediaPlayer();
@@ -594,17 +609,17 @@ public class MainActivity extends Activity implements LocationListener {
             mediaPlayer.setAudioAttributes(
                     new AudioAttributes.Builder()
                             .setUsage(AudioAttributes.USAGE_MEDIA)
-                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                            .setContentType(
+                                    AudioAttributes.CONTENT_TYPE_MUSIC
+                            )
                             .build()
             );
 
             mediaPlayer.setDataSource(this, uri);
 
             mediaPlayer.setOnPreparedListener(player -> {
-
                 musicPrepared = true;
                 player.start();
-
                 showToast("Reproduciendo música en STEVEEN DRIVE");
             });
 
@@ -613,13 +628,9 @@ public class MainActivity extends Activity implements LocationListener {
             });
 
             mediaPlayer.setOnErrorListener((player, what, extra) -> {
-
                 musicPrepared = false;
-
                 showToast("No se pudo reproducir este archivo");
-
                 releaseMediaPlayer();
-
                 return true;
             });
 
@@ -628,9 +639,7 @@ public class MainActivity extends Activity implements LocationListener {
             showToast("Cargando canción...");
 
         } catch (Exception e) {
-
             releaseMediaPlayer();
-
             showToast("Error al cargar la canción");
         }
     }
@@ -655,13 +664,13 @@ public class MainActivity extends Activity implements LocationListener {
         }
     }
 
-    // ---------------------------------------------------------
     // VIDEO
-    // ---------------------------------------------------------
 
     private void openVideo() {
 
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        Intent intent =
+                new Intent(Intent.ACTION_OPEN_DOCUMENT);
+
         intent.setType("video/*");
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
@@ -690,9 +699,7 @@ public class MainActivity extends Activity implements LocationListener {
         }
     }
 
-    // ---------------------------------------------------------
     // MAPAS
-    // ---------------------------------------------------------
 
     private void openMaps() {
 
@@ -724,9 +731,7 @@ public class MainActivity extends Activity implements LocationListener {
         }
     }
 
-    // ---------------------------------------------------------
     // RESULTADOS DE SELECTORES
-    // ---------------------------------------------------------
 
     @Override
     protected void onActivityResult(
@@ -737,7 +742,9 @@ public class MainActivity extends Activity implements LocationListener {
 
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (resultCode != RESULT_OK || data == null || data.getData() == null) {
+        if (resultCode != RESULT_OK
+                || data == null
+                || data.getData() == null) {
             return;
         }
 
@@ -752,14 +759,13 @@ public class MainActivity extends Activity implements LocationListener {
         }
     }
 
-    // ---------------------------------------------------------
-    // GPS Y VELOCÍMETRO
-    // ---------------------------------------------------------
+    // GPS Y VELOCIMETRO
 
     private void requestLocationIfNeeded() {
 
-        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
+        if (checkSelfPermission(
+                Manifest.permission.ACCESS_FINE_LOCATION
+        ) != PackageManager.PERMISSION_GRANTED) {
 
             requestPermissions(
                     new String[]{
@@ -783,8 +789,9 @@ public class MainActivity extends Activity implements LocationListener {
 
         try {
 
-            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-                    != PackageManager.PERMISSION_GRANTED) {
+            if (checkSelfPermission(
+                    Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED) {
                 return;
             }
 
@@ -803,9 +810,10 @@ public class MainActivity extends Activity implements LocationListener {
                     Looper.getMainLooper()
             );
 
-            Location lastLocation = locationManager.getLastKnownLocation(
-                    LocationManager.GPS_PROVIDER
-            );
+            Location lastLocation =
+                    locationManager.getLastKnownLocation(
+                            LocationManager.GPS_PROVIDER
+                    );
 
             if (lastLocation != null) {
                 updateSpeed(lastLocation);
@@ -840,7 +848,6 @@ public class MainActivity extends Activity implements LocationListener {
         }
 
         float speedKmh = location.getSpeed() * 3.6f;
-
         int speed = Math.round(speedKmh);
 
         speedText.setText(String.valueOf(Math.max(0, speed)));
@@ -870,9 +877,7 @@ public class MainActivity extends Activity implements LocationListener {
     ) {
     }
 
-    // ---------------------------------------------------------
     // PERMISOS
-    // ---------------------------------------------------------
 
     @Override
     public void onRequestPermissionsResult(
@@ -890,28 +895,30 @@ public class MainActivity extends Activity implements LocationListener {
         if (requestCode == LOCATION_REQUEST) {
 
             if (grantResults.length > 0
-                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    && grantResults[0]
+                    == PackageManager.PERMISSION_GRANTED) {
 
                 startGPS();
 
             } else {
-
-                showToast("Se necesita permiso de ubicación para el velocímetro");
+                showToast(
+                        "Se necesita permiso de ubicación para el velocímetro"
+                );
             }
         }
     }
 
-    // ---------------------------------------------------------
     // MENSAJES
-    // ---------------------------------------------------------
 
     private void showToast(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        Toast.makeText(
+                this,
+                message,
+                Toast.LENGTH_SHORT
+        ).show();
     }
 
-    // ---------------------------------------------------------
     // CICLO DE VIDA
-    // ---------------------------------------------------------
 
     @Override
     protected void onResume() {
