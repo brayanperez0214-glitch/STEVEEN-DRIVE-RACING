@@ -1,41 +1,28 @@
 
 <?xml version="1.0" encoding="utf-8"?>
-
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-feature
         android:name="android.hardware.location.gps"
         android:required="false" />
 
-    <uses-permission
-        android:name="android.permission.ACCESS_FINE_LOCATION" />
-
-    <uses-permission
-        android:name="android.permission.ACCESS_COARSE_LOCATION" />
-
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission
         android:name="android.permission.BLUETOOTH"
         android:maxSdkVersion="30" />
-
     <uses-permission
         android:name="android.permission.BLUETOOTH_ADMIN"
         android:maxSdkVersion="30" />
 
-    <!-- VISIBILIDAD DE APLICACIONES -->
-
     <queries>
-
         <intent>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent>
-
         <package android:name="com.google.android.apps.maps" />
-
         <package android:name="com.whatsapp" />
-
         <package android:name="com.google.android.projection.gearhead" />
-
     </queries>
 
     <application
@@ -50,14 +37,10 @@
             android:screenOrientation="landscape"
             android:exported="true">
 
-            <!-- INICIO DE LA APLICACION -->
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
-            <!-- POSIBILIDAD DE SER LAUNCHER DEL RADIO -->
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -66,7 +49,5 @@
             </intent-filter>
 
         </activity>
-
     </application>
-
 </manifest>
