@@ -163,11 +163,11 @@ public class MainActivity extends Activity implements LocationListener {
         addHotspot(0.000f, 0.000f, 0.060f, 0.085f, this::openSettings);
         addHotspot(0.065f, 0.000f, 0.070f, 0.085f, this::openPhone);
 
-        // WIFI: SENSOR DESPLAZADO A LA DERECHA
+        // WIFI
 
         addHotspot(0.835f, 0.000f, 0.055f, 0.110f, this::openWiFi);
 
-        // BLUETOOTH: ACCESO INDEPENDIENTE
+        // BLUETOOTH
 
         addHotspot(0.945f, 0.000f, 0.055f, 0.090f, this::openBluetooth);
 
@@ -279,9 +279,9 @@ public class MainActivity extends Activity implements LocationListener {
                 )
         );
 
-        // HORA DESPLAZADA A LA DERECHA
+        // HORA Y FECHA MÁS A LA DERECHA
 
-        addAt(panel, 0.700f, 0.008f, 0.105f, 0.080f);
+        addAt(panel, 0.755f, 0.008f, 0.105f, 0.080f);
     }
 
     private void updateClock() {
@@ -317,23 +317,18 @@ public class MainActivity extends Activity implements LocationListener {
     private void openWiFi() {
 
         try {
-
             Intent intent =
                     new Intent(Settings.ACTION_WIFI_SETTINGS);
-
             startActivity(intent);
 
         } catch (Exception e) {
 
             try {
-
                 Intent fallback =
                         new Intent(Settings.ACTION_WIRELESS_SETTINGS);
-
                 startActivity(fallback);
 
             } catch (Exception ex) {
-
                 showToast("No se pudieron abrir los ajustes Wi-Fi");
             }
         }
@@ -344,14 +339,11 @@ public class MainActivity extends Activity implements LocationListener {
     private void openBluetooth() {
 
         try {
-
             Intent intent =
                     new Intent(Settings.ACTION_BLUETOOTH_SETTINGS);
-
             startActivity(intent);
 
         } catch (Exception e) {
-
             showToast("No se pudieron abrir los ajustes Bluetooth");
         }
     }
@@ -371,7 +363,6 @@ public class MainActivity extends Activity implements LocationListener {
         try {
             Intent intent =
                     new Intent(Settings.ACTION_SETTINGS);
-
             startActivity(intent);
         } catch (Exception e) {
             showToast("No se pudieron abrir los ajustes");
@@ -408,7 +399,6 @@ public class MainActivity extends Activity implements LocationListener {
                     Intent.ACTION_VIEW,
                     Uri.parse("https://www.youtube.com")
             );
-
             startActivity(intent);
 
         } catch (Exception e) {
@@ -589,8 +579,6 @@ public class MainActivity extends Activity implements LocationListener {
         panel.setGravity(Gravity.CENTER_VERTICAL);
         panel.setPadding(9, 5, 9, 5);
 
-        // FONDO NEGRO COMPLETAMENTE OPACO
-
         GradientDrawable background = new GradientDrawable();
         background.setColor(Color.BLACK);
         background.setAlpha(255);
@@ -721,8 +709,6 @@ public class MainActivity extends Activity implements LocationListener {
 
         panel.addView(controls);
 
-        // ZONA DE MUSICA DEBAJO DEL NAVEGADOR
-
         addAt(panel, 0.735f, 0.505f, 0.255f, 0.265f);
     }
 
@@ -739,10 +725,7 @@ public class MainActivity extends Activity implements LocationListener {
         button.setBackgroundColor(Color.TRANSPARENT);
 
         button.setLayoutParams(
-                new LinearLayout.LayoutParams(
-                        size,
-                        34
-                )
+                new LinearLayout.LayoutParams(size, 34)
         );
 
         return button;
@@ -779,9 +762,7 @@ public class MainActivity extends Activity implements LocationListener {
             }
 
         } catch (Exception ignored) {
-
         } finally {
-
             try {
                 retriever.release();
             } catch (Exception ignored) {
@@ -1056,7 +1037,7 @@ public class MainActivity extends Activity implements LocationListener {
         }
     }
 
-    // MAPAS
+    // MAPAS: APERTURA EXTERNA ACTUAL
 
     private void openMaps() {
 
@@ -1311,8 +1292,6 @@ public class MainActivity extends Activity implements LocationListener {
         musicHandler.removeCallbacks(musicProgressRunnable);
 
         stopGPS();
-
-        // LA MUSICA PUEDE CONTINUAR MIENTRAS SE ABRE OTRA APLICACION.
     }
 
     @Override
