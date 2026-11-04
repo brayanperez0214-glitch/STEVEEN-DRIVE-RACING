@@ -15,6 +15,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.media.AudioAttributes;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -29,6 +30,7 @@ import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -52,14 +54,25 @@ public class MainActivity extends Activity implements LocationListener {
     private TextView clockText;
     private TextView dateText;
 
+    private TextView songTitle;
+    private TextView songArtist;
+    private TextView playButton;
+    private TextView currentTimeText;
+    private TextView durationText;
+    private SeekBar musicSeekBar;
+
     private LocationManager locationManager;
     private boolean locationStarted = false;
 
     private MediaPlayer mediaPlayer;
     private Uri currentAudioUri;
     private boolean musicPrepared = false;
+    private boolean userSeeking = false;
 
     private final Handler clockHandler =
+            new Handler(Looper.getMainLooper());
+
+    private final Handler musicHandler =
             new Handler(Looper.getMainLooper());
 
     private final Runnable clockRunnable = new Runnable() {
@@ -67,6 +80,17 @@ public class MainActivity extends Activity implements LocationListener {
         public void run() {
             updateClock();
             clockHandler.postDelayed(this, 1000);
+        }
+    };
+
+    private final Runnable musicProgressRunnable = new Runnable() {
+        @Override
+        public void run() {
+            updateMusicProgress();
+
+            if (musicPrepared && mediaPlayer != null) {
+                musicHandler.postDelayed(this, 500);
+            }
         }
     };
 
@@ -85,6 +109,7 @@ public class MainActivity extends Activity implements LocationListener {
         setContentView(root);
 
         // IMAGEN PRINCIPAL
+
         ImageView background = new ImageView(this);
         background.setImageResource(R.drawable.dashboard);
         background.setScaleType(ImageView.ScaleType.FIT_XY);
@@ -98,6 +123,7 @@ public class MainActivity extends Activity implements LocationListener {
         );
 
         // VELOCIMETRO GPS
+
         speedText = new TextView(this);
         speedText.setText("0");
         speedText.setTextColor(Color.WHITE);
@@ -105,17 +131,14 @@ public class MainActivity extends Activity implements LocationListener {
         speedText.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
         speedText.setGravity(Gravity.CENTER);
 
-        GradientDrawable speedBackground = new GradientDrawable();
-        speedBackground.setColor(Color.TRANSPARENT);
-        speedBackground.setCornerRadius(18);
-        speedText.setBackground(speedBackground);
-
         addAt(speedText, 0.155f, 0.372f, 0.075f, 0.105f);
 
         // RELOJ Y FECHA
+
         createClockPanel();
 
         // BARRA INFERIOR
+
         addHotspot(0.010f, 0.755f, 0.100f, 0.145f, this::showHome);
         addHotspot(0.118f, 0.755f, 0.100f, 0.145f, this::openAndroidAuto);
         addHotspot(0.224f, 0.755f, 0.100f, 0.145f, this::showHome);
@@ -128,22 +151,28 @@ public class MainActivity extends Activity implements LocationListener {
         addHotspot(0.900f, 0.755f, 0.095f, 0.145f, this::openYouTubeWeb);
 
         // MAPAS
+
         addHotspot(0.735f, 0.125f, 0.255f, 0.355f, this::openMaps);
 
-        // MUSICA INTEGRADA
-        addHotspot(0.735f, 0.505f, 0.255f, 0.265f, this::toggleMusic);
+        // REPRODUCTOR INTEGRADO
+
+        createMusicPanel();
 
         // CONFIGURACION Y TELEFONO
+
         addHotspot(0.000f, 0.000f, 0.060f, 0.085f, this::openSettings);
         addHotspot(0.065f, 0.000f, 0.070f, 0.085f, this::openPhone);
 
-        // ORDEN CORRECTO: WIFI PRIMERO
+        // WIFI: ACCESO INDEPENDIENTE
+
         addHotspot(0.785f, 0.000f, 0.055f, 0.090f, this::openWiFi);
 
-        // BLUETOOTH DESPUES DEL WIFI
+        // BLUETOOTH: ACCESO INDEPENDIENTE
+
         addHotspot(0.945f, 0.000f, 0.055f, 0.090f, this::openBluetooth);
 
         // GPS
+
         locationManager =
                 (LocationManager) getSystemService(LOCATION_SERVICE);
 
@@ -250,8 +279,9 @@ public class MainActivity extends Activity implements LocationListener {
                 )
         );
 
-        // RELOJ MOVIDO A LA IZQUIERDA DEL WIFI
-        addAt(panel, 0.635f, 0.015f, 0.135f, 0.075f);
+        // ENTRE AVEO Y WIFI
+
+        addAt(panel, 0.665f, 0.008f, 0.105f, 0.080f);
     }
 
     private void updateClock() {
@@ -534,7 +564,216 @@ public class MainActivity extends Activity implements LocationListener {
         showToast("STEVEEN DRIVE");
     }
 
-    // REPRODUCTOR DE MUSICA INTEGRADO
+    // PANEL VISUAL DE MUSICA
+
+    private void createMusicPanel() {
+
+        LinearLayout panel = new LinearLayout(this);
+        panel.setOrientation(LinearLayout.VERTICAL);
+        panel.setGravity(Gravity.CENTER_VERTICAL);
+        panel.setPadding(9, 5, 9, 5);
+
+        GradientDrawable background = new GradientDrawable();
+        background.setColor(Color.argb(225, 10, 10, 10));
+        background.setCornerRadius(12);
+        background.setStroke(2, Color.rgb(210, 35, 35));
+
+        panel.setBackground(background);
+
+        TextView heading = new TextView(this);
+        heading.setText("REPRODUCTOR");
+        heading.setTextColor(Color.rgb(255, 65, 65));
+        heading.setTextSize(10);
+        heading.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        heading.setGravity(Gravity.CENTER);
+
+        panel.addView(heading);
+
+        songTitle = new TextView(this);
+        songTitle.setText("Selecciona una canción");
+        songTitle.setTextColor(Color.WHITE);
+        songTitle.setTextSize(11);
+        songTitle.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        songTitle.setSingleLine(true);
+        songTitle.setEllipsize(android.text.TextUtils.TruncateAt.END);
+
+        panel.addView(songTitle);
+
+        songArtist = new TextView(this);
+        songArtist.setText("Ninguna canción");
+        songArtist.setTextColor(Color.LTGRAY);
+        songArtist.setTextSize(9);
+        songArtist.setSingleLine(true);
+        songArtist.setEllipsize(android.text.TextUtils.TruncateAt.END);
+
+        panel.addView(songArtist);
+
+        musicSeekBar = new SeekBar(this);
+        musicSeekBar.setMax(1000);
+        musicSeekBar.setProgress(0);
+        musicSeekBar.setPadding(0, 0, 0, 0);
+
+        musicSeekBar.setOnSeekBarChangeListener(
+                new SeekBar.OnSeekBarChangeListener() {
+
+                    @Override
+                    public void onProgressChanged(
+                            SeekBar seekBar,
+                            int progress,
+                            boolean fromUser
+                    ) {
+                        if (fromUser && musicPrepared
+                                && mediaPlayer != null) {
+
+                            int duration = mediaPlayer.getDuration();
+
+                            currentTimeText.setText(
+                                    formatTime(duration * progress / 1000)
+                            );
+                        }
+                    }
+
+                    @Override
+                    public void onStartTrackingTouch(SeekBar seekBar) {
+                        userSeeking = true;
+                    }
+
+                    @Override
+                    public void onStopTrackingTouch(SeekBar seekBar) {
+
+                        if (musicPrepared && mediaPlayer != null) {
+
+                            int position =
+                                    mediaPlayer.getDuration()
+                                            * seekBar.getProgress() / 1000;
+
+                            mediaPlayer.seekTo(position);
+                        }
+
+                        userSeeking = false;
+                    }
+                }
+        );
+
+        panel.addView(musicSeekBar);
+
+        LinearLayout controls = new LinearLayout(this);
+        controls.setGravity(Gravity.CENTER_VERTICAL);
+        controls.setOrientation(LinearLayout.HORIZONTAL);
+
+        currentTimeText = new TextView(this);
+        currentTimeText.setText("00:00");
+        currentTimeText.setTextColor(Color.WHITE);
+        currentTimeText.setTextSize(8);
+
+        controls.addView(
+                currentTimeText,
+                new LinearLayout.LayoutParams(
+                        0,
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        1
+                )
+        );
+
+        playButton = createMusicButton("▶", 36);
+        playButton.setOnClickListener(v -> toggleMusic());
+
+        controls.addView(playButton);
+
+        TextView selectButton = createMusicButton("+", 32);
+        selectButton.setOnClickListener(v -> openMusic());
+
+        controls.addView(selectButton);
+
+        durationText = new TextView(this);
+        durationText.setText("00:00");
+        durationText.setTextColor(Color.WHITE);
+        durationText.setTextSize(8);
+        durationText.setGravity(Gravity.RIGHT);
+
+        controls.addView(
+                durationText,
+                new LinearLayout.LayoutParams(
+                        0,
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        1
+                )
+        );
+
+        panel.addView(controls);
+
+        // ZONA DE MUSICA DEBAJO DEL NAVEGADOR
+
+        addAt(panel, 0.735f, 0.505f, 0.255f, 0.265f);
+    }
+
+    private TextView createMusicButton(String symbol, int size) {
+
+        TextView button = new TextView(this);
+
+        button.setText(symbol);
+        button.setTextColor(Color.WHITE);
+        button.setTextSize(17);
+        button.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        button.setGravity(Gravity.CENTER);
+
+        button.setBackgroundColor(Color.TRANSPARENT);
+
+        button.setLayoutParams(
+                new LinearLayout.LayoutParams(
+                        size,
+                        34
+                )
+        );
+
+        return button;
+    }
+
+    private void updateMusicInfo(Uri uri) {
+
+        String title = "Canción seleccionada";
+        String artist = "Artista desconocido";
+
+        MediaMetadataRetriever retriever =
+                new MediaMetadataRetriever();
+
+        try {
+
+            retriever.setDataSource(this, uri);
+
+            String metadataTitle =
+                    retriever.extractMetadata(
+                            MediaMetadataRetriever.METADATA_KEY_TITLE
+                    );
+
+            String metadataArtist =
+                    retriever.extractMetadata(
+                            MediaMetadataRetriever.METADATA_KEY_ARTIST
+                    );
+
+            if (metadataTitle != null && !metadataTitle.trim().isEmpty()) {
+                title = metadataTitle;
+            }
+
+            if (metadataArtist != null && !metadataArtist.trim().isEmpty()) {
+                artist = metadataArtist;
+            }
+
+        } catch (Exception ignored) {
+
+        } finally {
+
+            try {
+                retriever.release();
+            } catch (Exception ignored) {
+            }
+        }
+
+        songTitle.setText(title);
+        songArtist.setText(artist);
+    }
+
+    // SELECCION DE MUSICA
 
     private void openMusic() {
 
@@ -553,6 +792,8 @@ public class MainActivity extends Activity implements LocationListener {
         }
     }
 
+    // REPRODUCIR Y PAUSAR
+
     private void toggleMusic() {
 
         if (mediaPlayer == null || currentAudioUri == null) {
@@ -568,7 +809,9 @@ public class MainActivity extends Activity implements LocationListener {
         try {
 
             if (mediaPlayer.isPlaying()) {
+
                 mediaPlayer.pause();
+                playButton.setText("▶");
                 showToast("Música en pausa");
 
             } else {
@@ -579,6 +822,11 @@ public class MainActivity extends Activity implements LocationListener {
                 }
 
                 mediaPlayer.start();
+                playButton.setText("Ⅱ");
+
+                musicHandler.removeCallbacks(musicProgressRunnable);
+                musicHandler.post(musicProgressRunnable);
+
                 showToast("Reproduciendo música");
             }
 
@@ -587,12 +835,21 @@ public class MainActivity extends Activity implements LocationListener {
         }
     }
 
+    // CARGAR AUDIO
+
     private void startInlineAudio(Uri uri) {
 
         releaseMediaPlayer();
 
         currentAudioUri = uri;
         musicPrepared = false;
+
+        musicSeekBar.setProgress(0);
+        currentTimeText.setText("00:00");
+        durationText.setText("00:00");
+        playButton.setText("…");
+
+        updateMusicInfo(uri);
 
         try {
 
@@ -618,19 +875,44 @@ public class MainActivity extends Activity implements LocationListener {
             mediaPlayer.setDataSource(this, uri);
 
             mediaPlayer.setOnPreparedListener(player -> {
+
                 musicPrepared = true;
+
+                int duration = player.getDuration();
+
+                musicSeekBar.setMax(1000);
+                durationText.setText(formatTime(duration));
+
                 player.start();
+
+                playButton.setText("Ⅱ");
+
+                musicHandler.removeCallbacks(musicProgressRunnable);
+                musicHandler.post(musicProgressRunnable);
+
                 showToast("Reproduciendo música en STEVEEN DRIVE");
             });
 
             mediaPlayer.setOnCompletionListener(player -> {
+
+                playButton.setText("▶");
+                musicSeekBar.setProgress(0);
+                currentTimeText.setText("00:00");
+
+                musicHandler.removeCallbacks(musicProgressRunnable);
+
                 showToast("Canción finalizada");
             });
 
             mediaPlayer.setOnErrorListener((player, what, extra) -> {
+
                 musicPrepared = false;
+                playButton.setText("▶");
+
                 showToast("No se pudo reproducir este archivo");
+
                 releaseMediaPlayer();
+
                 return true;
             });
 
@@ -639,12 +921,64 @@ public class MainActivity extends Activity implements LocationListener {
             showToast("Cargando canción...");
 
         } catch (Exception e) {
+
             releaseMediaPlayer();
+
+            songTitle.setText("Error al cargar canción");
+            songArtist.setText("Selecciona otro archivo");
+
             showToast("Error al cargar la canción");
         }
     }
 
+    // ACTUALIZAR PROGRESO
+
+    private void updateMusicProgress() {
+
+        if (!musicPrepared || mediaPlayer == null) {
+            return;
+        }
+
+        try {
+
+            int duration = mediaPlayer.getDuration();
+            int position = mediaPlayer.getCurrentPosition();
+
+            if (!userSeeking && duration > 0) {
+
+                int progress = (int) (
+                        position * 1000L / duration
+                );
+
+                musicSeekBar.setProgress(progress);
+
+                currentTimeText.setText(formatTime(position));
+            }
+
+        } catch (Exception ignored) {
+        }
+    }
+
+    private String formatTime(int milliseconds) {
+
+        int totalSeconds = Math.max(0, milliseconds / 1000);
+
+        int minutes = totalSeconds / 60;
+        int seconds = totalSeconds % 60;
+
+        return String.format(
+                Locale.getDefault(),
+                "%02d:%02d",
+                minutes,
+                seconds
+        );
+    }
+
+    // LIBERAR REPRODUCTOR
+
     private void releaseMediaPlayer() {
+
+        musicHandler.removeCallbacks(musicProgressRunnable);
 
         musicPrepared = false;
 
@@ -661,6 +995,10 @@ public class MainActivity extends Activity implements LocationListener {
             }
 
             mediaPlayer = null;
+        }
+
+        if (playButton != null) {
+            playButton.setText("▶");
         }
     }
 
@@ -864,6 +1202,7 @@ public class MainActivity extends Activity implements LocationListener {
 
     @Override
     public void onProviderDisabled(String provider) {
+
         if (speedText != null) {
             speedText.setText("0");
         }
@@ -901,6 +1240,7 @@ public class MainActivity extends Activity implements LocationListener {
                 startGPS();
 
             } else {
+
                 showToast(
                         "Se necesita permiso de ubicación para el velocímetro"
                 );
@@ -911,6 +1251,7 @@ public class MainActivity extends Activity implements LocationListener {
     // MENSAJES
 
     private void showToast(String message) {
+
         Toast.makeText(
                 this,
                 message,
@@ -922,12 +1263,19 @@ public class MainActivity extends Activity implements LocationListener {
 
     @Override
     protected void onResume() {
+
         super.onResume();
 
         hideSystemUI();
 
         clockHandler.removeCallbacks(clockRunnable);
         clockHandler.post(clockRunnable);
+
+        if (musicPrepared && mediaPlayer != null) {
+
+            musicHandler.removeCallbacks(musicProgressRunnable);
+            musicHandler.post(musicProgressRunnable);
+        }
 
         if (locationManager != null) {
             requestLocationIfNeeded();
@@ -936,9 +1284,12 @@ public class MainActivity extends Activity implements LocationListener {
 
     @Override
     protected void onPause() {
+
         super.onPause();
 
         clockHandler.removeCallbacks(clockRunnable);
+
+        musicHandler.removeCallbacks(musicProgressRunnable);
 
         stopGPS();
 
@@ -947,9 +1298,11 @@ public class MainActivity extends Activity implements LocationListener {
 
     @Override
     protected void onDestroy() {
+
         super.onDestroy();
 
         clockHandler.removeCallbacks(clockRunnable);
+        musicHandler.removeCallbacks(musicProgressRunnable);
 
         stopGPS();
 
