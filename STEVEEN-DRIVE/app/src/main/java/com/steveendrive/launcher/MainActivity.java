@@ -163,9 +163,9 @@ public class MainActivity extends Activity implements LocationListener {
         addHotspot(0.000f, 0.000f, 0.060f, 0.085f, this::openSettings);
         addHotspot(0.065f, 0.000f, 0.070f, 0.085f, this::openPhone);
 
-        // WIFI: ACCESO INDEPENDIENTE
+        // WIFI: SENSOR DESPLAZADO A LA DERECHA
 
-        addHotspot(0.785f, 0.000f, 0.055f, 0.090f, this::openWiFi);
+        addHotspot(0.835f, 0.000f, 0.055f, 0.110f, this::openWiFi);
 
         // BLUETOOTH: ACCESO INDEPENDIENTE
 
@@ -279,9 +279,9 @@ public class MainActivity extends Activity implements LocationListener {
                 )
         );
 
-        // ENTRE AVEO Y WIFI
+        // HORA DESPLAZADA A LA DERECHA
 
-        addAt(panel, 0.665f, 0.008f, 0.105f, 0.080f);
+        addAt(panel, 0.700f, 0.008f, 0.105f, 0.080f);
     }
 
     private void updateClock() {
@@ -315,27 +315,43 @@ public class MainActivity extends Activity implements LocationListener {
     // WIFI
 
     private void openWiFi() {
+
         try {
+
             Intent intent =
                     new Intent(Settings.ACTION_WIFI_SETTINGS);
 
             startActivity(intent);
 
         } catch (Exception e) {
-            showToast("No se pudieron abrir los ajustes Wi-Fi");
+
+            try {
+
+                Intent fallback =
+                        new Intent(Settings.ACTION_WIRELESS_SETTINGS);
+
+                startActivity(fallback);
+
+            } catch (Exception ex) {
+
+                showToast("No se pudieron abrir los ajustes Wi-Fi");
+            }
         }
     }
 
     // BLUETOOTH
 
     private void openBluetooth() {
+
         try {
+
             Intent intent =
                     new Intent(Settings.ACTION_BLUETOOTH_SETTINGS);
 
             startActivity(intent);
 
         } catch (Exception e) {
+
             showToast("No se pudieron abrir los ajustes Bluetooth");
         }
     }
@@ -573,8 +589,11 @@ public class MainActivity extends Activity implements LocationListener {
         panel.setGravity(Gravity.CENTER_VERTICAL);
         panel.setPadding(9, 5, 9, 5);
 
+        // FONDO NEGRO COMPLETAMENTE OPACO
+
         GradientDrawable background = new GradientDrawable();
-        background.setColor(Color.argb(225, 10, 10, 10));
+        background.setColor(Color.BLACK);
+        background.setAlpha(255);
         background.setCornerRadius(12);
         background.setStroke(2, Color.rgb(210, 35, 35));
 
@@ -1293,7 +1312,7 @@ public class MainActivity extends Activity implements LocationListener {
 
         stopGPS();
 
-        // La música puede continuar mientras se abre otra aplicación.
+        // LA MUSICA PUEDE CONTINUAR MIENTRAS SE ABRE OTRA APLICACION.
     }
 
     @Override
